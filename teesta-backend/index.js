@@ -5,6 +5,7 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const jwt = require('jsonwebtoken'); 
 const adminRoutes = require('./routes/adminRoutes');
+const userRoutes = require('./routes/userRouter');
 
 dotenv.config(); 
 
@@ -32,6 +33,10 @@ app.post('/api/admin/login', (req, res) => {
 
 // Admin route
 app.use('/api/admin', adminRoutes); 
+
+
+//User routes for different functionality
+app.use('/api/user', userRoutes);
 
 
 const PORT = process.env.PORT || 5000;
