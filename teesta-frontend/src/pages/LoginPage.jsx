@@ -17,6 +17,31 @@ const Login = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    try {
+      // Sending the login request using fetch
+      const response = await fetch("http://localhost:5000/api/admin/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        localStorage.setItem("token", data.token);
+        console.log(localStorage.getItem("token"));
+        // Navigate to the dashboard after successful login
+        navigate("/dashboard");
+      } else {
+        // Display error message if login failed
+        setErrorMessage(data.message || "Login failed");
+      }
+    } catch (error) {
+      console.error("Error during login:", error);
+      setErrorMessage("An error occurred. Please try again.");
+    }
   };
 
   return (
