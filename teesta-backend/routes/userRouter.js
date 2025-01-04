@@ -5,48 +5,64 @@ const Transaction = require('../models/Transaction');
 
 const router = express.Router();
 
-// Endpoint: /api/user/pay-request
-router.post('/pay-request', async (req, res) => {
-  const { money_receiver, receiver_pin, money_sender, amount } = req.body;
+router.post("/pay-request", async (req, res) => {
+    const { money_receiver, receiver_pin, money_sender, amount } = req.body;
+    console.log(req.body);
+  
+    try {
+      const receiverAccount = parseInt(money_receiver, 10);
+      const receiverPin = parseInt(receiver_pin, 10);
+      const senderAccount = parseInt(money_sender, 10);
 
-  try {
-    // Check if receiver exists and pin is correct
-    const receiver = await User.findOne({ bank_account: money_receiver });
-    if (!receiver) {
-      return res.status(404).json({ message: 'Receiver not found' });
+      console.log(receiverAccount, receiverPin, senderAccount);
+  
+      // Fetch receiver
+      const receiver = await User.findOne({ bank_account: receiverAccount });
+      if (!receiver) {
+        return res.status(404).json({ message: "Receiver not found" });
+      }
+  
+      // Validate receiver PIN
+      if (receiver.pin !== receiverPin) {
+        return res.status(401).json({ message: "Invalid receiver PIN" });
+      }
+  
+      // Fetch sender
+      const sender = await User.findOne({ bank_account: senderAccount });
+      if (!sender) {
+        return res.status(404).json({ message: "Sender not found" });
+      }
+  
+      // Create transaction
+    //   const transactionId = Date.now().toString().slice(-10); // Generate a unique transaction ID
+    let transactionId = `TXN${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+
+    // Ensure the transaction ID is unique
+    let existingTransaction = await Transaction.findOne({ transactionId });
+    while (existingTransaction) {
+      transactionId = `TXN${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+      existingTransaction = await Transaction.findOne({ transactionId });
     }
-    if (receiver.pin !== receiver_pin) {
-      return res.status(401).json({ message: 'Invalid pin for receiver' });
+  
+      const transaction = new Transaction({
+        transaction_id: transactionId,
+        sender_id: senderAccount,
+        receiver_id: receiverAccount,
+        amount: parseFloat(amount),
+        complete: false,
+      });
+  
+      await transaction.save();
+  
+      res.status(200).json({
+        success: true,
+        message: "Transaction created successfully",
+        transaction_id: transactionId,
+      });
+    } catch (error) {
+      console.error("Error occurred:", error.message);
+      res.status(500).json({ message: "Server error" });
     }
-
-    // Check if sender exists
-    const sender = await User.findOne({ bank_account: money_sender });
-    if (!sender) {
-      return res.status(404).json({ message: 'Sender not found' });
-    }
-
-    // Create a unique transaction ID
-    const transactionId = `${Date.now()}${Math.floor(Math.random() * 10000)}`;
-
-    // Create a new transaction
-    const newTransaction = new Transaction({
-      transaction_id: transactionId,
-      sender_id: money_sender,
-      receiver_id: money_receiver,
-      amount: amount,
-      complete: false,
-    });
-
-    await newTransaction.save();
-
-    res.status(201).json({ 
-      message: 'Transaction initiated successfully', 
-      transaction_id: transactionId 
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'An error occurred', error });
-  }
-});
-
+  });
+    
 module.exports = router;
