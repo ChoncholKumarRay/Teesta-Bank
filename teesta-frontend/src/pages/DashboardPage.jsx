@@ -19,13 +19,16 @@ const DashboardPage = () => {
       }
 
       try {
-        const response = await fetch("http://localhost:5000/api/admin/users", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`, // Include token in the Authorization header
-          },
-        });
+        const response = await fetch(
+          "https://teesta-bank.onrender.com/api/admin/get-users",
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`, // Include token in the Authorization header
+            },
+          }
+        );
 
         const data = await response.json();
 

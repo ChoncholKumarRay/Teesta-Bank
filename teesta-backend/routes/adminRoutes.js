@@ -21,7 +21,7 @@ const authenticateJWT = (req, res, next) => {
 };
 
 // Admin route to get all bank users
-router.get('/users', authenticateJWT, async (req, res) => {
+router.get('/get-users', authenticateJWT, async (req, res) => {
   try {
     // const users = await User.find();
     const users = await User.find({}, 'username bank_account balance'); 
