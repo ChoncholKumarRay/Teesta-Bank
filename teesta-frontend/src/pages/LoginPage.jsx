@@ -17,30 +17,6 @@ const Login = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-
-    try {
-      const response = await fetch(
-        "http://localhost:5000/api/admin-login", // API endpoint
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ username, password }),
-        }
-      );
-
-      const data = await response.json();
-
-      if (response.ok) {
-        navigate(data.redirectTo);
-      } else {
-        setErrorMessage(data.message); // Set error message to display
-      }
-    } catch (error) {
-      console.error("Error during login:", error);
-      setErrorMessage("An error occurred. Please try again.");
-    }
   };
 
   return (
