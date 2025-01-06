@@ -33,9 +33,7 @@ router.post("/pay-request", async (req, res) => {
       if (!sender) {
         return res.status(404).json({ message: "Sender not found" });
       }
-  
-      // Create transaction
-    //   const transactionId = Date.now().toString().slice(-10); // Generate a unique transaction ID
+    // Create unique transaction id
     let transactionId = `TXN${Date.now()}-${Math.floor(Math.random() * 10000)}`;
 
     // Ensure the transaction ID is unique
@@ -122,5 +120,37 @@ router.post("/response-pay-request", async (req, res) => {
       res.status(500).json({ message: "Server error" });
     }
   });
+
+router.post("/transaction-check", async (req, res) => {
+    const { transaction_id } = req.body;
+  
+    if (!transaction_id) {
+      return res.status(400).json({ message: "Transaction ID is required" });
+    }
+  
+    try {
+      const transaction = await Transaction.findOne({ transaction_id });
+  
+      if (!transaction) {
+        return res.status(404).json({ message: "Transaction not found" });
+      }
+  
+      if (transaction.complete) {
+        return res.status(200).json({
+          success: true,
+          message: "Transaction completed successfully",
+        });
+      } else {
+        return res.status(400).json({ 
+          success: false,
+          message: "Transaction isn't completed",
+        });
+      }
+    } catch (error) {
+      console.error("Error while checking transaction", error);
+      return res.status(500).json({ message: "Server error" });
+    }
+});
+
     
 module.exports = router;
