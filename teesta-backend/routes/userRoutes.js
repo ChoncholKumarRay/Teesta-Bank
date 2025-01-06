@@ -8,7 +8,7 @@ const router = express.Router();
 
 router.post("/pay-request", async (req, res) => {
     const { money_receiver, receiver_pin, money_sender, amount } = req.body;
-    console.log(req.body);
+    // console.log(req.body);
   
     try {
       const receiverAccount = parseInt(money_receiver, 10);
@@ -45,8 +45,8 @@ router.post("/pay-request", async (req, res) => {
   
       const transaction = new Transaction({
         transaction_id: transactionId,
-        sender_id: senderAccount,
-        receiver_id: receiverAccount,
+        sender_account: senderAccount,
+        receiver_account: receiverAccount,
         amount: parseFloat(amount),
         complete: false,
       });
@@ -69,6 +69,7 @@ router.post("/response-pay-request", async (req, res) => {
     const { transaction_id, sender_account, sender_pin } = req.body;
     const senderAccount = parseInt(sender_account, 10);
     const senderPin = parseInt(sender_pin, 10);
+    console.log(req.body);
   
     try {
       if (!transaction_id || !sender_account || !sender_pin) {
@@ -89,11 +90,11 @@ router.post("/response-pay-request", async (req, res) => {
         return res.status(404).json({ message: "Transaction is invalid" });
       }
 
-      if (transaction.sender_id !== senderAccount) {
+      if (transaction.sender_account !== senderAccount) {
         return res.status(401).json({ message: "Invalid User in Pay response" });
       }
 
-      const receiver = await User.findOne({ bank_account: transaction.receiver_id });
+      const receiver = await User.findOne({ bank_account: transaction.receiver_account });
       if (!receiver) {
         return res.status(404).json({ message: "Receiver account not found" });
       }
