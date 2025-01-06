@@ -5,7 +5,7 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const jwt = require('jsonwebtoken'); 
 const adminRoutes = require('./routes/adminRoutes');
-const userRoutes = require('./routes/userRouter');
+const userRoutes = require('./routes/userRoutes');
 
 dotenv.config(); 
 
@@ -18,6 +18,12 @@ app.use(express.json());
 mongoose.connect(process.env.MONGO_URL)
   .then(() => console.log('Connected to MongoDB'))
   .catch((err) => console.error('MongoDB connection error:', err));
+
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.url}`);
+  next();
+});
+  
 
 // Admin login route
 app.post('/api/admin/login', (req, res) => {

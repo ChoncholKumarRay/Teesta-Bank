@@ -5,6 +5,7 @@ const Transaction = require('../models/Transaction');
 
 const router = express.Router();
 
+
 router.post("/pay-request", async (req, res) => {
     const { money_receiver, receiver_pin, money_sender, amount } = req.body;
     console.log(req.body);
@@ -56,8 +57,65 @@ router.post("/pay-request", async (req, res) => {
   
       res.status(200).json({
         success: true,
-        message: "Transaction created successfully",
+        message: "You are making payment with Teesta bank. Provide your pin to confirm.",
         transaction_id: transactionId,
+      });
+    } catch (error) {
+      console.error("Error occurred:", error.message);
+      res.status(500).json({ message: "Server error" });
+    }
+  });
+
+
+router.post("/response-pay-request", async (req, res) => {
+    const { transaction_id, sender_account, sender_pin } = req.body;
+    const senderAccount = parseInt(sender_account, 10);
+    const senderPin = parseInt(sender_pin, 10);
+  
+    try {
+      if (!transaction_id || !sender_account || !sender_pin) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+  
+      const sender = await User.findOne({ bank_account: senderAccount });
+      if (!sender) {
+        return res.status(404).json({ message: "Sender account not found" });
+      }
+  
+      if (sender.pin !== senderPin) {
+        return res.status(401).json({ message: "Invalid Bank Account Pin" });
+      }
+
+      const transaction = await Transaction.findOne({ transaction_id });
+      if (!transaction) {
+        return res.status(404).json({ message: "Transaction is invalid" });
+      }
+
+      if (transaction.sender_id !== senderAccount) {
+        return res.status(401).json({ message: "Invalid User in Pay response" });
+      }
+
+      const receiver = await User.findOne({ bank_account: transaction.receiver_id });
+      if (!receiver) {
+        return res.status(404).json({ message: "Receiver account not found" });
+      }
+
+
+      if (sender.balance < transaction.amount) {
+        return res.status(400).json({ message: "Insufficient balance" });
+      }
+  
+      // Balance transfer
+      sender.balance -= transaction.amount;
+      receiver.balance += transaction.amount;
+      transaction.complete = true;
+
+      await Promise.all([sender.save(), receiver.save(), transaction.save()]);
+      // Respond with success
+      res.status(200).json({
+        success: true,
+        message: "Transaction completed successfully",
+        transaction_id: transaction_id,
       });
     } catch (error) {
       console.error("Error occurred:", error.message);
