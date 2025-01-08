@@ -83,6 +83,10 @@
   transition: 0.3s ease;
 }
 
+.login-button:hover {
+  background: #5521e2;
+}
+
 .error-message {
   color: red;
   font-size: 14px;

@@ -1,8 +1,23 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
-
+const dotenv = require('dotenv');
 const router = express.Router();
+
+dotenv.config();
+
+router.post('/login', (req, res) => {
+  const { username, password } = req.body;
+
+  console.log(req.body);
+
+  if (username === process.env.ADMIN_USERNAME && password === process.env.ADMIN_PASSWORD) {
+    const token = jwt.sign({ username }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    res.json({ message: 'Login successful', token });
+  } else {
+    res.status(401).json({ message: 'Invalid credentials' });
+  }
+});
 
 // Middleware to verify JWT token
 const authenticateJWT = (req, res, next) => {
