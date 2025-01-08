@@ -118,75 +118,6 @@ router.post("/response-pay-request", async (req, res) => {
     }
   });
 
-
-  router.post("/send-money", async (req, res) => {
-    const { money_sender, sender_pin, money_receiver, amount } = req.body;
-    
-    const senderAccount = parseInt(money_sender, 10);
-    const receiverAccount = parseInt(money_receiver, 10);
-    const senderPin = parseInt(sender_pin, 10);
-    const transfer_amount = parseInt(amount, 10);
-    
-    try {
-      const sender = await User.findOne({ bank_account: senderAccount });
-      if (!sender) {
-        return res.status(404).json({ message: "Sender account not found" });
-      }
-  
-      if (sender.pin !== senderPin) {
-        return res.status(401).json({ message: "Invalid Sender PIN" });
-      }
-  
-      const receiver = await User.findOne({ bank_account: receiverAccount });
-      if (!receiver) {
-        return res.status(404).json({ message: "Receiver account not found" });
-      }
-  
-      if (sender.balance < transfer_amount) {
-        return res.status(400).json({ message: "Insufficient funds" });
-      }
-  
-      let transactionId = `TXN${Date.now()}-${Math.floor(Math.random() * 10000)}`;
-
-      // Unique Transaction ID
-      let existingTransaction = await Transaction.findOne({ transactionId });
-      while (existingTransaction) {
-      transactionId = `TXN${Date.now()}-${Math.floor(Math.random() * 10000)}`;
-      existingTransaction = await Transaction.findOne({ transactionId });
-      }
-  
-      // Create new transaction document
-      const transaction = new Transaction({
-        transaction_id: transactionId,
-        sender_account: senderAccount, 
-        receiver_account: receiverAccount, 
-        amount: transfer_amount,
-        complete: false, 
-      });
-  
-      // Balance transfer
-      sender.balance -= transfer_amount;
-      receiver.balance += transfer_amount;
-      transaction.complete = true;
-
-      sender.transactions.push(transactionId);
-      receiver.transactions.push(transactionId);
-
-      await Promise.all([sender.save(), receiver.save(), transaction.save()]);
-  
-      res.status(200).json({
-        success: true,
-        message: "Transaction completed successfully",
-        transaction_id: transactionId
-      });
-    } catch (error) {
-      console.error("Error occurred:", error.message);
-      res.status(500).json({ message: "Server error" });
-    }
-});
-
-
-
 router.post("/transaction-check", async (req, res) => {
     const { transaction_id } = req.body;
   
@@ -216,6 +147,71 @@ router.post("/transaction-check", async (req, res) => {
       console.error("Error while checking transaction", error);
       return res.status(500).json({ message: "Server error" });
     }
-});
+  });
+router.post("/send-money", async (req, res) => {
+  const { money_sender, sender_pin, money_receiver, amount } = req.body;
+  
+  const senderAccount = parseInt(money_sender, 10);
+  const receiverAccount = parseInt(money_receiver, 10);
+  const senderPin = parseInt(sender_pin, 10);
+  const transfer_amount = parseInt(amount, 10);
+  
+  try {
+    const sender = await User.findOne({ bank_account: senderAccount });
+    if (!sender) {
+      return res.status(404).json({ message: "Sender account not found" });
+    }
+
+    if (sender.pin !== senderPin) {
+      return res.status(401).json({ message: "Invalid Sender PIN" });
+    }
+
+    const receiver = await User.findOne({ bank_account: receiverAccount });
+    if (!receiver) {
+      return res.status(404).json({ message: "Receiver account not found" });
+    }
+
+    if (sender.balance < transfer_amount) {
+      return res.status(400).json({ message: "Insufficient funds" });
+    }
+
+    let transactionId = `TXN${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+
+    // Unique Transaction ID
+    let existingTransaction = await Transaction.findOne({ transactionId });
+    while (existingTransaction) {
+    transactionId = `TXN${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+    existingTransaction = await Transaction.findOne({ transactionId });
+    }
+
+    // Create new transaction document
+    const transaction = new Transaction({
+      transaction_id: transactionId,
+      sender_account: senderAccount, 
+      receiver_account: receiverAccount, 
+      amount: transfer_amount,
+      complete: false, 
+    });
+
+    // Balance transfer
+    sender.balance -= transfer_amount;
+    receiver.balance += transfer_amount;
+    transaction.complete = true;
+
+    sender.transactions.push(transactionId);
+    receiver.transactions.push(transactionId);
+
+    await Promise.all([sender.save(), receiver.save(), transaction.save()]);
+
+    res.status(200).json({
+      success: true,
+      message: "Transaction completed successfully",
+      transaction_id: transactionId
+    });
+  } catch (error) {
+    console.error("Error occurred:", error.message);
+    res.status(500).json({ success:false, message: "Server error" });
+  }
+  });
  
 module.exports = router;
