@@ -10,7 +10,7 @@ const DashboardPage = () => {
   // Fetch users from the backend
   useEffect(() => {
     const fetchUsers = async () => {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("teesta-admin-token");
 
       if (!token) {
         // If there's no token, redirect to the login page

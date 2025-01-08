@@ -30,8 +30,8 @@ const Login = () => {
       const data = await response.json();
 
       if (response.ok) {
-        localStorage.setItem("token", data.token);
-        console.log(localStorage.getItem("token"));
+        localStorage.setItem("teesta-admin-token", data.token);
+        console.log(localStorage.getItem("teesta-admin-token"));
         // Navigate to the dashboard after successful login
         navigate("/dashboard");
       } else {
