@@ -64,7 +64,7 @@ const DashboardPage = () => {
             <div className="table-row" key={user._id}>
               <div className="table-username">{user.username}</div>
               <div>{user.bank_account}</div>
-              <div>${user.balance}</div>
+              <div className="table-balance">${user.balance}</div>
             </div>
           ))
         )}

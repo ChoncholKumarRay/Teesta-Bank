@@ -63,7 +63,12 @@
 
 .table-row .table-username {
   text-align: left;
-  padding-left: 50px;
+  padding-left: 60px;
+}
+
+.table-row .table-balance {
+  text-align: left;
+  padding-left: 100px;
 }
 
 .loading-dashboard {
