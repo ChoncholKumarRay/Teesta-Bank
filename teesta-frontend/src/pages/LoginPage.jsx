@@ -7,7 +7,8 @@ const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [passwordVisible, setPasswordVisible] = useState(false);
-  const [errorMessage, setErrorMessage] = useState(""); // State for error messages
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const navigate = useNavigate();
 
@@ -15,27 +16,38 @@ const Login = () => {
     setPasswordVisible((prevState) => !prevState);
   };
 
+  // Handling Login button functionality
   const handleLogin = async (e) => {
     e.preventDefault();
+    if (!username || !password) {
+      setErrorMessage("Please provide both username and password!");
+      return;
+    }
+
+    setErrorMessage("");
+    setIsProcessing(true); // to disable login button
+
     try {
-      // Sending the login request using fetch
-      const response = await fetch("http://localhost:5001/api/admin/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username, password }),
-      });
+      const response = await fetch(
+        "http://teesta.cam-sust.org/api/admin/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ username, password }),
+        }
+      );
 
       const data = await response.json();
 
       if (response.ok) {
         localStorage.setItem("teesta-admin-token", data.token);
-        console.log(localStorage.getItem("teesta-admin-token"));
+        // console.log(localStorage.getItem("teesta-admin-token"));
+
         // Navigate to the dashboard after successful login
         navigate("/dashboard");
       } else {
-        // Display error message if login failed
         setErrorMessage(data.message || "Login failed");
       }
     } catch (error) {
@@ -76,8 +88,14 @@ const Login = () => {
           </button>
         </div>
         {errorMessage && <div className="error-message">{errorMessage}</div>}
-        <button type="submit" className="login-button">
-          Log In
+
+        <button
+          type="submit"
+          className={`login-button ${isProcessing ? "disabled-button" : ""}`}
+          onClick={handleLogin}
+          disabled={isProcessing}
+        >
+          {isProcessing ? <span className="loading-icon"></span> : "Login"}{" "}
         </button>
       </form>
     </div>

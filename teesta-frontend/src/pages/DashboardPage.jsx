@@ -4,7 +4,7 @@ import "./styles/DashboardPage.css";
 
 const DashboardPage = () => {
   const [users, setUsers] = useState([]);
-  const [errorMessage, setErrorMessage] = useState(""); // State for error messages
+  const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
 
   // Fetch users from the backend
@@ -20,12 +20,12 @@ const DashboardPage = () => {
 
       try {
         const response = await fetch(
-          "https://teesta-bank.onrender.com/api/admin/get-users",
+          "http://teesta.cam-sust.org/api/admin/get-users",
           {
             method: "GET",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`, // Include token in the Authorization header
+              Authorization: `Bearer ${token}`,
             },
           }
         );
@@ -33,7 +33,7 @@ const DashboardPage = () => {
         const data = await response.json();
 
         if (response.ok) {
-          setUsers(data); // Set the users data to state
+          setUsers(data);
         } else {
           setErrorMessage(data.message || "Failed to fetch users");
         }
@@ -58,7 +58,7 @@ const DashboardPage = () => {
           <div>Balance</div>
         </div>
         {users.length === 0 ? (
-          <p>No users found.</p>
+          <p className="loading-dashboard">No users found.</p>
         ) : (
           users.map((user) => (
             <div className="table-row" key={user._id}>

@@ -1,5 +1,3 @@
-/* DashboardPage.css */
-
 .dashboard {
   display: flex;
   flex-direction: column;
@@ -66,4 +64,8 @@
 .table-row .table-username {
   text-align: left;
   padding-left: 50px;
+}
+
+.loading-dashboard {
+  text-align: center;
 }
