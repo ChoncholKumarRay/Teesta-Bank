@@ -300,3 +300,121 @@ This API endpoint allows a user to check the status of a transaction using the `
 ---
 
 ---
+
+
+# API Documentation: Admin Routes
+
+### Base URL
+
+The admin API endpoints are accessible via the base URL followed by `/api/admin`.
+
+---
+
+## 1. **POST** `/api/admin/login`
+
+### Description
+
+This endpoint allows the admin to log in by providing a username and password. On successful login, it generates a JWT token valid for 1 hour.
+
+### Request Body
+
+```json
+{
+  "username": "admin_username",
+  "password": "admin_password"
+}
+```
+
+- `username` (string): Admin username (stored in `.env` file as `ADMIN_USERNAME`).
+- `password` (string): Admin password (stored in `.env` file as `ADMIN_PASSWORD`).
+
+### Response
+
+**200 OK**
+
+```json
+{
+  "message": "Login successful",
+  "token": "JWT_TOKEN"
+}
+```
+
+**401 Unauthorized**
+
+```json
+{
+  "message": "Invalid credentials"
+}
+```
+
+---
+
+## 2. **GET** `/api/admin/get-users`
+
+### Description
+
+This endpoint retrieves a list of all users in the bank system, including their username, bank account number, and balance.
+
+### Authorization
+
+Requires a valid JWT token in the `Authorization` header. Use the format:  
+`Authorization: Bearer <JWT_TOKEN>`
+
+### Response
+
+**200 OK**
+
+```json
+[
+  {
+    "username": "user1",
+    "bank_account": "123456789",
+    "balance": 5000
+  },
+  {
+    "username": "user2",
+    "bank_account": "987654321",
+    "balance": 2500
+  }
+]
+```
+
+**403 Forbidden**
+
+- Missing or invalid token:
+
+```json
+{
+  "message": "Access Denied"
+}
+```
+
+- Token verification failed:
+
+```json
+{
+  "message": "Invalid token"
+}
+```
+
+**500 Internal Server Error**
+
+- Failed to fetch users:
+
+```json
+{
+  "message": "Failed to fetch users"
+}
+```
+
+---
+
+### Middleware: `authenticateJWT`
+
+This middleware validates the JWT token in the `Authorization` header. If the token is valid, it attaches the decoded user data to `req.user` and proceeds to the next middleware or route handler. If invalid, it returns a `403 Forbidden` response.
+
+### **Error Codes**:
+
+- **403 Forbidden**: Missing or invalid token.
+
+---
